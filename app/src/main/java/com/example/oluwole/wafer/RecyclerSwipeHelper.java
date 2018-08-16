@@ -9,6 +9,7 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -114,9 +115,9 @@ public abstract class RecyclerSwipeHelper extends ItemTouchHelper.SimpleCallback
         buttonsBuffer.clear();
         swipeThreshold = 0.5f * buttons.size() * THRESHOLD;
 
-        if (swipeThreshold < -300)
-            listener.onSwiped(viewHolder, direction, viewHolder.getAdapterPosition());
-        else
+//        if (swipeThreshold < -300)
+//            listener.onSwiped(viewHolder, direction, viewHolder.getAdapterPosition());
+//        else
             recoverSwipedItem();
     }
 
@@ -147,18 +148,26 @@ public abstract class RecyclerSwipeHelper extends ItemTouchHelper.SimpleCallback
         }
 
         if (actionState == ItemTouchHelper.ACTION_STATE_SWIPE) {
+            int DELETE_THRESH = -1300;
+            Log.e("TR", String.valueOf(dX));
+
             if (dX < 0) {
-                List<Deletebutton> buffer = new ArrayList<>();
 
-                if (!buttonsBuffer.containsKey(pos)) {
-                    instantiateDeletebutton(viewHolder, buffer);
-                    buttonsBuffer.put(pos, buffer);
+                if (dX <= DELETE_THRESH) {
+                    listener.onSwiped(viewHolder, pos, viewHolder.getAdapterPosition());
                 } else {
-                    buffer = buttonsBuffer.get(pos);
-                }
+                    List<Deletebutton> buffer = new ArrayList<>();
 
-                translationX = dX * buffer.size() * THRESHOLD / itemView.getWidth();
-                drawButtons(c, itemView, buffer, pos, translationX);
+                    if (!buttonsBuffer.containsKey(pos)) {
+                        instantiateDeletebutton(viewHolder, buffer);
+                        buttonsBuffer.put(pos, buffer);
+                    } else {
+                        buffer = buttonsBuffer.get(pos);
+                    }
+
+                    translationX = dX * buffer.size() * THRESHOLD / itemView.getWidth();
+                    drawButtons(c, itemView, buffer, pos, translationX);
+                }
             }
         }
 
