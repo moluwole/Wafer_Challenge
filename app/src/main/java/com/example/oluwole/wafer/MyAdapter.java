@@ -3,7 +3,6 @@ package com.example.oluwole.wafer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.example.oluwole.wafer.model.DataModel;
@@ -31,18 +30,14 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
         private TextView countryName, countryLang, countryCurr;
         private View layout;
-        public RelativeLayout viewBackground, viewforeground;
 
         ViewHolder(View view){
             super(view);
 
             layout = view;
-            countryName = (TextView)view.findViewById(R.id.country_name);
-            countryCurr = (TextView)view.findViewById(R.id.country_currency);
-            countryLang = (TextView)view.findViewById(R.id.country_language);
-
-            viewBackground = (RelativeLayout)view.findViewById(R.id.view_background);
-            viewforeground = (RelativeLayout)view.findViewById(R.id.view_foreground);
+            countryName = view.findViewById(R.id.country_name);
+            countryCurr = view.findViewById(R.id.country_currency);
+            countryLang = view.findViewById(R.id.country_language);
         }
     }
 
