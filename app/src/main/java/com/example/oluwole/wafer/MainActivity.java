@@ -1,19 +1,8 @@
 package com.example.oluwole.wafer;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.ItemTouchHelper;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
 
 import com.example.oluwole.wafer.model.DataModel;
 
@@ -28,14 +17,20 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.WeakReference;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener{
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+public class MainActivity extends AppCompatActivity {
 
     RecyclerView recyclerView;
     MyAdapter adapter;
+    private ArrayList<DataModel> dataList;
 
     private static final String BASE_URL = "https://restcountries.eu/rest/v2/all";
 
@@ -44,7 +39,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        recyclerView = (RecyclerView)findViewById(R.id.list_view);
+        recyclerView = findViewById(R.id.list_view);
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(this);
         recyclerView.setLayoutManager(layoutManager);
@@ -54,18 +49,26 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
 
         recyclerView.addItemDecoration(decorator);
 
-        ItemTouchHelper.SimpleCallback simpleCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        new ItemTouchHelper(simpleCallback).attachToRecyclerView(recyclerView);
+        new RecyclerSwipeHelper(this, recyclerView, new RecyclerSwipeHelper.RecyclerItemTouchHelperListener() {
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
+                adapter.remove(viewHolder.getAdapterPosition());
+            }
+        }) {
+            @Override
+            public void instantiateDeletebutton(RecyclerView.ViewHolder viewHolder, List<Deletebutton> Deletebuttons) {
+                Deletebuttons.add(new RecyclerSwipeHelper.Deletebutton(MainActivity.this, new DeletebuttonClickListener() {
+                    @Override
+                    public void onClick(int pos) {
+                        adapter.remove(pos);
+                    }
+                }));
+            }
+        };
 
         new GetContent(MainActivity.this).execute();
     }
 
-    @Override
-    public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        if (viewHolder instanceof MyAdapter.ViewHolder){
-            adapter.remove(viewHolder.getAdapterPosition());
-        }
-    }
 
     private static class GetContent extends AsyncTask<Void, Void, ArrayList<DataModel>>{
 
@@ -132,9 +135,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerItemTouch
             progressDialog.dismiss();
 
             MainActivity mainActivity = myActivity.get();
+            mainActivity.dataList = dataModels;
 
             mainActivity.adapter = new MyAdapter();
-            mainActivity.adapter.setData(dataModels);
+            mainActivity.adapter.setData(mainActivity.dataList);
 
             mainActivity.recyclerView.setAdapter(mainActivity.adapter);
         }
